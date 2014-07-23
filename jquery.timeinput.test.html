@@ -1,0 +1,90 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>jQuery timeinput test page</title>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="jquery.timeinput-0.1.js"></script>
+</head>
+<body>
+    <h1>jQuery.timeInput plugin test page</h1>
+    <p>
+        You can see the plugin in action by typing any valid number of hours and minutes in the demo input field.
+    </p>
+    Demo input field: <input id="timeInput" /><button id="triggerChange">Trigger change event</button>
+    <br/>
+    <span id="lblOutput"></span>
+    <h3>Unit test results:</h3>
+    <div id="testResult"></div>
+    <script>
+        var ti = $("#timeInput").timeInput();
+        ti.on("change", function () {
+            console.log("New input value: '" + ti.val() + "'. Minutes: " + ti.getTotalMinutes() + " (" + ti.getTotalHours() + " hours)");
+            $("#lblOutput").html("Minutes: " + ti.getTotalMinutes() + "<br/>Hours: " + ti.getTotalHours());
+        });
+
+        $("#triggerChange").on("click", function () { ti.trigger("change"); });
+
+        //kick off the test code
+        runTests(ti);
+
+        function runTests($ti) {
+            console.log("Tests started");
+            $("#testResult").append("<h3>String to minutes function</h3>");
+            testStringToMinutes($ti);
+            $("#testResult").append("<h3>Minutes to string function</h3>");
+            testMinutesToString();
+            console.log("Tests completed");
+        }
+
+        function assertAndLog(func, arg, expected, message) {
+            var result = func(arg);
+            var newDiv = $("<div></div>");
+            if (result === expected) {
+                newDiv.append("<span style='color:green;'>Succes: </span>");
+            }
+            else {
+                newDiv.append("<span style='color:red;'>Failed: </span>");
+            }
+            newDiv.append("<span>Input: '" + arg + "' Output: '" + result + "' Expected: '" + expected + "' - " + message + "</span>");
+            $("#testResult").append(newDiv);
+        }
+
+        function testStringToMinutes($ti) {
+            //somewhat common inputs
+            assertAndLog($.fn.timeInput.stringToMinutes, "00:00", 0, "String to minutes - Test #1");
+            assertAndLog($.fn.timeInput.stringToMinutes, "00:01", 1, "String to minutes - Test #2");
+            assertAndLog($.fn.timeInput.stringToMinutes, "1:11", 71, "String to minutes - Test #3");
+            assertAndLog($.fn.timeInput.stringToMinutes, ":8", 8, "String to minutes - Test #4");
+            assertAndLog($.fn.timeInput.stringToMinutes, "8", 480, "String to minutes - Test #5");
+            assertAndLog($.fn.timeInput.stringToMinutes, "1200", 1200 * 60, "String to minutes - Test #6");
+            assertAndLog($.fn.timeInput.stringToMinutes, "00001200", 1200 * 60, "String to minutes - Test #7");
+
+            //time input with decimals
+            assertAndLog($.fn.timeInput.stringToMinutes, ",5", 30, "String to minutes - Test #8");
+            assertAndLog($.fn.timeInput.stringToMinutes, "3,5", 210, "String to minutes - Test #9");
+            assertAndLog($.fn.timeInput.stringToMinutes, "3,75", 225, "String to minutes - Test #10");
+            assertAndLog($.fn.timeInput.stringToMinutes, "1,", 60, "String to minutes - Test #11");
+
+            //weird inputs
+            assertAndLog($.fn.timeInput.stringToMinutes, "", 0, "String to minutes - Test #12");
+            assertAndLog($.fn.timeInput.stringToMinutes, "1:70", 130, "String to minutes - Test #13");
+            assertAndLog($.fn.timeInput.stringToMinutes, "1:3333333", 93, "String to minutes - Test #14: the minutes must be calculated with value 1:33, so 60 + 33 = 93");
+            assertAndLog($.fn.timeInput.stringToMinutes, "1:8", 68, "String to minutes - Test #15: the 8 is assumed to be the number of minutes");
+            assertAndLog($.fn.timeInput.stringToMinutes, ",", 0, "String to minutes - Test #16");
+      
+        }
+
+        
+        function testMinutesToString() {
+            assertAndLog($.fn.timeInput.minutesToString,1, "0:01", "Minutes to string - Test #1");
+            assertAndLog($.fn.timeInput.minutesToString, 60, "1:00", "Minutes to string - Test #2");
+            assertAndLog($.fn.timeInput.minutesToString, 70, "1:10", "Minutes to string - Test #3");
+            assertAndLog($.fn.timeInput.minutesToString, -1, "0:00", "Minutes to string - Test #5: no negative minutes allowed.");
+            assertAndLog($.fn.timeInput.minutesToString, 3600, "60:00", "Minutes to string - Test #6");
+
+            //floats are not allowed by convention, but because they will be rounded it still works
+            assertAndLog($.fn.timeInput.minutesToString, 1.9, "0:02", "Minutes to string - Test #7: round floats to integer");
+        }
+    </script>
+</body>
+</html>
