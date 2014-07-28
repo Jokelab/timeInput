@@ -63,19 +63,25 @@ Date: July 23, 2014
 
         /* handle keypress event */
         function handleKeyPress(e) {
+            //allow backspace and tab
+            if (e.which == 0 || e.which == 8) {
+                return true;
+            }
+
             var chr = String.fromCharCode(e.which);
+         
             var separatorEntered = chr === settings.hourMinuteSeparator || chr == settings.decimalSeparator;
 
             //allow only numbers semicolons and comma's
             if (("1234567890" + settings.hourMinuteSeparator + settings.decimalSeparator).indexOf(chr) < 0) {
-                return true;
+                return false;
             }
 
             //only allow one separator
             if (($(this).val().indexOf(settings.hourMinuteSeparator) > -1 || $(this).val().indexOf(settings.decimalSeparator) > -1)
                 && separatorEntered)
             {
-                return true;
+                return false;
             }
 
            
