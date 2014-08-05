@@ -18,7 +18,8 @@ Date: July 23, 2014
             minMinutes: 0,
             defaultMinutes: null,
             decimalSeparator: ",",
-            hourMinuteSeparator: ":"
+            hourMinuteSeparator: ":",
+            roundToNearest: 15
         }, options);
         var timeRegEx = new RegExp(/^[0-9]{1,}:[0-5][0-9]$/);
 
@@ -45,18 +46,21 @@ Date: July 23, 2014
                 if (value.indexOf(settings.hourMinuteSeparator) > -1 || value.indexOf(settings.decimalSeparator) > -1) {
                     //the value has a semicolon or comma but doesn't match the pattern
                     minutes = ensureBounds($.fn.timeInput.stringToMinutes(value, settings.hourMinuteSeparator, settings.decimalSeparator));
+                   minutes = roundToNearest(minutes);
                 }
                 else {
                     //the value doesn't match the pattern, but because only numbers are allowed AND it does not contain a semicolon or comma, 
                     //so the input must be a simple integer value
                     minutes = ensureBounds(parseInt(value * 60));
+                    minutes = roundToNearest(minutes);
                 }
                 $(this).val($.fn.timeInput.minutesToString(minutes, settings.hourMinuteSeparator));
                 return true;
             }
             //time is ok, only check boundaries
             var minutes = ensureBounds($.fn.timeInput.stringToMinutes(value, settings.hourMinuteSeparator, settings.decimalSeparator));
-
+            minutes = roundToNearest(minutes);
+            $(this).val($.fn.timeInput.minutesToString(minutes, settings.hourMinuteSeparator));
             return true;
         }
 
@@ -91,6 +95,19 @@ Date: July 23, 2014
         //make sure the value is always between min and max
         function ensureBounds(minutes) {
             return Math.min(Math.max(minutes, settings.minMinutes), settings.maxMinutes);
+        }
+
+        /* round minutes to quarter (15), half hour (30) or whole hour  (60).
+         * The settings specify which value to use. Any other value will be ignored.
+         */
+        function roundToNearest(minutes) {
+            var roundTo = settings.roundToNearest;
+            var output = minutes;
+            if (roundTo == 15 || roundTo == 30 || roundTo==60) {
+                output = Math.round(minutes / roundTo) * roundTo;
+            }
+    
+            return output;
         }
 
 
